@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -15,10 +17,28 @@ func cleanInput(text string) []string {
 	return cleanedInput
 }
 
+type config struct {
+	Next     *string
+	Previous *string
+}
+
 type cliCommand struct {
 	name        string
 	description string
 	callback    func() error
+	config      *config
+}
+
+type LocationArea struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
+}
+
+type LocationAreasResponse struct {
+	Count    int            `json:"count"`
+	Next     *string        `json:"next"`
+	Previous *string        `json:"previous"`
+	Results  []LocationArea `json:"results"`
 }
 
 var commands map[string]cliCommand
@@ -40,17 +60,73 @@ func commandHelp() error {
 	return nil
 }
 
+func processLocationAreasCommand(url string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	result := LocationAreasResponse{}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err
+	}
+	commands["map"].config.Next = result.Next
+	commands["map"].config.Previous = result.Previous
+	for _, locationArea := range result.Results {
+		fmt.Println(locationArea.Name)
+	}
+	return nil
+}
+
+func commandMap() error {
+	url := commands["map"].config.Next
+	if url == nil {
+		fmt.Println("you're on the last page")
+		return nil
+	}
+	return processLocationAreasCommand(*url)
+}
+
+func commandMapb() error {
+	url := commands["mapb"].config.Previous
+	if url == nil {
+		fmt.Println("you're on the first page")
+		return nil
+	}
+	return processLocationAreasCommand(*url)
+}
+
 func main() {
+	locationAreaApiUrl := "https://pokeapi.co/api/v2/location-area"
+	mapConfig := &config{
+		Next:     &locationAreaApiUrl,
+		Previous: nil,
+	}
+
 	commands = map[string]cliCommand{
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-      callback:    commandHelp,
+			callback:    commandHelp,
+			config:      nil,
 		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the PokedexGo",
 			callback:    commandExit,
+			config:      nil,
+		},
+		"map": {
+			name:        "map",
+			description: "Displays the names of next 20 location areas in the Pokemon world",
+			callback:    commandMap,
+			config:      mapConfig,
+		},
+		"mapb": {
+			name:        "mapb",
+			description: "Displays the names of previous 20 location areas in the Pokemon world",
+			callback:    commandMapb,
+			config:      mapConfig,
 		},
 	}
 
