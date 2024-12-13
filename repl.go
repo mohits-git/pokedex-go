@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/mohits-git/pokedex-go/internal/pokeapi"
 )
 
 type config struct {
+	pokeapiClient   *pokeapi.Client
 	nextLocationUrl *string
 	prevLocationUrl *string
 }

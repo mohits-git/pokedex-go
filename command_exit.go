@@ -1,8 +1,8 @@
 package main
 
 import (
-  "fmt"
-  "os"
+	"fmt"
+	"os"
 )
 
 func commandExit(cfg *config) error {
