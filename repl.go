@@ -13,6 +13,7 @@ type config struct {
 	pokeapiClient   *pokeapi.Client
 	nextLocationUrl *string
 	prevLocationUrl *string
+  args            []string
 }
 
 type cliCommand struct {
@@ -46,6 +47,11 @@ func getCommands() map[string]cliCommand {
 			description: "Get the previous page of locations",
 			callback:    commandMapb,
 		},
+    "explore": {
+      name:       "explore",
+      description: "Explore the pokemons in a location",
+      callback:  commandExplore,
+    },
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
@@ -61,11 +67,14 @@ func startRepl(cfg *config) {
 	for {
 		fmt.Print("PokedexGo > ")
 		scanner.Scan()
-		input := scanner.Text()
-		words := cleanInput(input)
+		words := cleanInput(scanner.Text())
+
+    cfg.args = []string{}
 		command := ""
+
 		if len(words) != 0 {
 			command = words[0]
+      cfg.args = words[1:]
 		}
 
 		if cmd, ok := commands[command]; ok {
