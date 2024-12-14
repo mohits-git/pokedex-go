@@ -1,10 +1,18 @@
 package pokeapi
 
+type Stat struct {
+	Name     string
+	BaseStat int
+}
+
 type Pokemon struct {
-	ID                     int    `json:"id"`
-	Name                   string `json:"name"`
-	BaseExperience         int    `json:"base_experience"`
-	LocationAreaEncounters string `json:"location_area_encounters"`
+	ID             int
+	Name           string
+	BaseExperience int
+	Height         int
+	Weight         int
+	Types          []string
+	Stats          []Stat
 }
 
 type PokemonResponse struct {

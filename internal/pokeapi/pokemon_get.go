@@ -11,19 +11,7 @@ func (c *Client) GetPokemon(name string) (Pokemon, error) {
 
 	cachedResp, cached := c.cache.Get(url)
 	if cached {
-		pokemonsResp := PokemonResponse{}
-		if err := json.Unmarshal(cachedResp, &pokemonsResp); err != nil {
-			return Pokemon{}, err
-		}
-
-		pokemon := Pokemon{
-			ID:                     pokemonsResp.ID,
-			Name:                   pokemonsResp.Name,
-			BaseExperience:         pokemonsResp.BaseExperience,
-			LocationAreaEncounters: pokemonsResp.LocationAreaEncounters,
-		}
-
-		return pokemon, nil
+    return parsePokemon(cachedResp)
 	}
 
 	resp, err := http.Get(url)
@@ -37,18 +25,40 @@ func (c *Client) GetPokemon(name string) (Pokemon, error) {
 		return Pokemon{}, err
 	}
 
+	c.cache.Add(url, data)
+
+  return parsePokemon(data)
+}
+
+func parsePokemon(data []byte) (Pokemon, error) {
 	pokemonsResp := PokemonResponse{}
-	if err = json.Unmarshal(data, &pokemonsResp); err != nil {
+	if err := json.Unmarshal(data, &pokemonsResp); err != nil {
 		return Pokemon{}, err
 	}
 
-	c.cache.Add(url, data)
+	types := []string{}
+	for _, t := range pokemonsResp.Types {
+		types = append(types, t.Type.Name)
+	}
+	stats := []Stat{}
+	for _, s := range pokemonsResp.Stats {
+		stats = append(
+			stats,
+			Stat{
+				Name:     s.Stat.Name,
+				BaseStat: s.BaseStat,
+			},
+		)
+	}
 
 	pokemon := Pokemon{
-		ID:                     pokemonsResp.ID,
-		Name:                   pokemonsResp.Name,
-		BaseExperience:         pokemonsResp.BaseExperience,
-		LocationAreaEncounters: pokemonsResp.LocationAreaEncounters,
+		ID:             pokemonsResp.ID,
+		Name:           pokemonsResp.Name,
+		BaseExperience: pokemonsResp.BaseExperience,
+		Height:         pokemonsResp.Height,
+		Weight:         pokemonsResp.Weight,
+		Types:          types,
+    Stats:          stats,
 	}
 
 	return pokemon, nil
