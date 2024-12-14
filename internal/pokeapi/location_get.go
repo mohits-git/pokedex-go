@@ -6,12 +6,12 @@ import (
 	"net/http"
 )
 
-func (c *Client) ListPokemons(locationName string) ([]string, error) {
+func (c *Client) GetLocationPokemons(locationName string) ([]string, error) {
 	url := baseUrl + "/location-area/" + locationName
 
 	cachedResp, cached := c.cache.Get(url)
 	if cached {
-		pokemonsResp := PokemonsListResponse{}
+		pokemonsResp := GetLocationResponse{}
 		if err := json.Unmarshal(cachedResp, &pokemonsResp); err != nil {
 			return []string{}, err
 		}
@@ -36,7 +36,7 @@ func (c *Client) ListPokemons(locationName string) ([]string, error) {
 	}
 	c.cache.Add(url, data)
 
-	pokemonsResp := PokemonsListResponse{}
+	pokemonsResp := GetLocationResponse{}
 	err = json.Unmarshal(data, &pokemonsResp)
 	if err != nil {
 		return []string{}, err
