@@ -34,13 +34,14 @@ func (c *Client) GetLocationPokemons(locationName string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	c.cache.Add(url, data)
 
 	pokemonsResp := GetLocationResponse{}
 	err = json.Unmarshal(data, &pokemonsResp)
 	if err != nil {
 		return []string{}, err
 	}
+
+	c.cache.Add(url, data)
 
 	pokemons := []string{}
 	for _, pokemon := range pokemonsResp.PokemonEncounters {

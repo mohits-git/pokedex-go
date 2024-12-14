@@ -8,8 +8,12 @@ import (
 
 func main() {
 	cfg := &config{
-		pokeapiClient: pokeapi.NewClient(5*time.Second, 5*time.Minute),
-    args:          []string{},
+		pokeapiClient: pokeapi.NewClient(10*time.Second, 5*time.Minute),
+		args:          []string{},
+		pokedex: &userPokedex{
+			pokemons: map[string]pokeapi.Pokemon{},
+      userAttemps: map[string]int{},
+		},
 	}
 	startRepl(cfg)
 }

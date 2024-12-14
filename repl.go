@@ -9,11 +9,17 @@ import (
 	"github.com/mohits-git/pokedex-go/internal/pokeapi"
 )
 
+type userPokedex struct {
+	pokemons    map[string]pokeapi.Pokemon
+	userAttemps map[string]int
+}
+
 type config struct {
 	pokeapiClient   *pokeapi.Client
 	nextLocationUrl *string
 	prevLocationUrl *string
 	args            []string
+	pokedex         *userPokedex
 }
 
 type cliCommand struct {
@@ -51,6 +57,11 @@ func getCommands() map[string]cliCommand {
 			name:        "explore <location_name>",
 			description: "Explore the pokemons in a location",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch <pokemon_name>",
+			description: "Catch a pokemon",
+			callback:    commandCatch,
 		},
 		"exit": {
 			name:        "exit",
